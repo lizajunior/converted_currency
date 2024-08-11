@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Конвертер валют</title>
+  <style>
+    *{
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .convert_container{
+      display:flex;
+      flex-direction: column;
+      width:400px;
+      height:200px;
+      background-color: gray;
+      padding: 0 5px;
+    }
+
+    .buttons{
+      width:100%;
+      display:inline-flex;
+      gap:5px;
+      margin:auto;
+    }
+
+    button{
+      padding:3px;
+      width:50%;
+    }
+
+    .select{
+      text-align: center;
+      width:50%;
+      margin:0 auto;
+    }
+
+    label{
+      margin:0 20%;
+    }
+
+    .main{
+      display:flex;
+      justify-content: flex-start;
+      padding:5px;
+      text-align: center;
+    }
+
+    span{
+      padding-right:5px;
+    }
+
+    #finalAmount{
+      display:none;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Конвертер валют</h1>
+  <div class="convert_container">
+
+    <div class="main">
+      <span>Сумма:</span>
+      <input type="text" placeholder="0.00" class="searchBox"/>
+    </div>
+
+    <label for="">Из:</label>
+    <select class="select from">
+      <option value="">Выберите валюту</option>
+      <option value="usd">Доллар</option>
+      <option value="eur">Евро</option>
+      <option value="rub">Рубли</option>
+    </select>
+
+    <label for="">B:</label>
+    <select class="select to">
+      <option value="">Выберите валюту</option>
+      <option value="USD">Доллар</option>
+      <option value="EUR">Евро</option>
+      <option value="RUB">Рубли</option>
+    </select>
+
+    <div class="buttons">
+      <button class="convertBtn" type="submit">Конвертировать</button>
+      <button class="resetBtn">Сброс</button>
+    </div>
+
+    <div id="finalAmount">
+      <h2>
+        Сумма в валюте: 
+        <span class="finalValue"></span>
+      </h2>
+    </div>
+
+  </div>
+  <script>
+  
+  const searchNumber = document.querySelector('.searchBox');
+  const fromCur = document.querySelector('.from');
+  const toCur = document.querySelector('.to');
+
+  const convertBtn = document.querySelector('.convertBtn');
+  const resetBtn = document.querySelector('.resetBtn');
+
+  const finalValue = document.querySelector('.finalValue');
+  const finalAmount = document.querySelector('#finalAmount');
+
+  let resultFrom = '';
+  let resultTo = '';
+  let searchValue = 0;
+
+  const apiKey = '1044de9a7bd14ec6ccfc58bc';
+
+  function pageLoaded() {
+    fromCur.addEventListener('change', (event) => {
+      resultFrom = event.target.value;
+    });
+
+    toCur.addEventListener('change', (event) => {
+      resultTo = event.target.value;
+    });
+
+    searchNumber.addEventListener('input', (event) => {
+      searchValue = parseFloat(event.target.value);
+    });
+
+    function displayResult(formatData) {
+      if (!resultFrom || !resultTo || !searchValue || isNaN(searchValue)) {
+        alert('Пожалуйста, выберите валюты и введите корректную сумму для конвертации.');
+        return;
+      }
+
+      let fromRate = formatData.rates[resultFrom.toUpperCase()];
+      let toRate = formatData.rates[resultTo.toUpperCase()];
+
+      if (!fromRate || !toRate) {
+        alert('Невозможно получить курс для выбранной валюты.');
+        return;
+      }
+
+      finalValue.innerHTML = ((toRate / fromRate) * searchValue).toFixed(2);
+      finalAmount.style.display = 'block';
+    }
+
+    convertBtn.addEventListener('click', () => {
+      if (!resultFrom) {
+        alert('Пожалуйста, выберите исходную валюту.');
+        return;
+      }
+
+      const apiUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/${resultFrom}`;
+
+      fetch(apiUrl)
+        .then((response) => response.json())
+        .then(displayResult)
+        .catch((error) => {
+          console.error('Error!', error);
+          alert('Ошибка при получении данных от API.');
+        });
+    });
+
+    resetBtn.addEventListener('click', () => {
+      searchNumber.value = '';
+      fromCur.value = '';
+      toCur.value = '';
+      finalAmount.style.display = 'none';
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', pageLoaded);
+
+  </script>
+</body>
+</html>
